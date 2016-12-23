@@ -630,6 +630,18 @@ Dispatches a message when text is updated to the clipboard
 
 
 
+### saveSyncInitData(seed, deviceId) 
+
+Dispatches a message when sync init data needs to be saved
+
+**Parameters**
+
+**seed**: `Buffer | null`, Dispatches a message when sync init data needs to be saved
+
+**deviceId**: `Buffer | null`, Dispatches a message when sync init data needs to be saved
+
+
+
 
 * * *
 
