@@ -1347,7 +1347,7 @@ class PaymentsTab extends ImmutableComponent {
             this.props.ledgerData.get('created') && this.enabled
             ? <div className='autoSuggestSwitch'>
               <SettingCheckbox dataL10nId='autoSuggestSites' prefKey={settings.AUTO_SUGGEST_SITES} settings={this.props.settings} onChangeSetting={this.props.onChangeSetting} />
-              <span className='moreInfoBtn fa fa-question-circle' title='Some info here should ask Brad' />
+              <a className='moreInfoBtn fa fa-question-circle' href='https://brave.com/Payments_FAQ.html' target='_blank' data-l10n-id='paymentsFAQLink' />
             </div>
             : null
           }

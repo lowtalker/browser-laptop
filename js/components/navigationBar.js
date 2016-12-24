@@ -5,6 +5,7 @@
 const React = require('react')
 const Immutable = require('immutable')
 const ImmutableComponent = require('./immutableComponent')
+const tldjs = require('tldjs')
 
 const cx = require('../lib/classSet')
 const Button = require('./button')
@@ -33,8 +34,6 @@ class NavigationBar extends ImmutableComponent {
     this.onReloadLongPress = this.onReloadLongPress.bind(this)
     this.onNoScript = this.onNoScript.bind(this)
     this.onAuthorizePublisher = this.onAuthorizePublisher.bind(this)
-    // todo @cezaraugusto add hostPattern param
-    // this.onAuthorizePublisher = this.onAuthorizePublisher.bind(this, this.getHostPattern(synopsis))
   }
 
   get activeFrame () {
@@ -123,16 +122,36 @@ class NavigationBar extends ImmutableComponent {
     windowActions.setNoScriptVisible(!this.props.noScriptIsVisible)
   }
 
-  onAuthorizePublisher (hostPattern) {
+  get hostPattern () {
+    const getDomain = tldjs.getDomain(this.props.location)
+    return `https?://${getDomain}`
+  }
+
+  get enabledPublisher () {
+    const hostSettings = this.props.allSiteSettings.get(this.hostPattern)
+
+    if (hostSettings) {
+      const result = hostSettings.get('ledgerPayments')
+      if (typeof result === 'boolean') {
+        return result
+      } else {
+        // Sometimes result can be {}. If so, assume it's true
+        return true
+      }
+    }
+    // Return false if we can't find the hostPattern
+    return false
+  }
+
+  onAuthorizePublisher () {
     // if payments disabled, enable it
     if (!getSetting(settings.AUTO_SUGGEST_SITES)) {
       appActions.changeSetting(settings.PAYMENTS_ENABLED, true)
     }
 
-    // todo @cezaraugusto
-    // need to know if hostPattern is enabled on payments
-    // if not, add and enable.
-    // else, disable
+    this.enabledPublisher
+      ? appActions.changeSiteSetting(this.hostPattern, 'ledgerPayments', false)
+      : appActions.changeSiteSetting(this.hostPattern, 'ledgerPayments', true)
   }
 
   componentDidUpdate (prevProps) {
@@ -146,10 +165,8 @@ class NavigationBar extends ImmutableComponent {
     if (this.props.activeFrameKey === undefined) {
       return null
     }
-    const showAddPublisherButton = getSetting(settings.AUTO_SUGGEST_SITES) === false && getSetting(settings.HIDE_EXCLUDED_SITES) === false
 
-    // TODO @cezaraugusto check if publisher is authorized so we can change color
-    const isPublisherAllowed = true
+    const showAddPublisherButton = !getSetting(settings.AUTO_SUGGEST_SITES) && !getSetting(settings.HIDE_EXCLUDED_SITES)
 
     return <div id='navigator'
       ref='navigator'
@@ -239,7 +256,7 @@ class NavigationBar extends ImmutableComponent {
             showAddPublisherButton
             ? <span className={cx({
               addPublisherButtonContainer: true,
-              authorizedPublisher: isPublisherAllowed
+              authorizedPublisher: this.enabledPublisher
             })}>
               <Button iconClass='fa-btc'
                 l10nId='enablePublisher'
