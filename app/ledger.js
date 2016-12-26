@@ -323,6 +323,15 @@ if (ipc) {
     }
   })
 
+  ipc.on(messages.LEDGER_LOCATION, (event, location) => {
+    if ((!synopsis) || (event.sender.session === session.fromPartition('default')) || (!tldjs.isValid(location))) {
+      event.returnValue = {}
+      return
+    }
+
+    event.returnValue = locations[location]
+  })
+
   ipc.on(messages.LEDGER_PUBLISHER, (event, location) => {
     var ctx
 
